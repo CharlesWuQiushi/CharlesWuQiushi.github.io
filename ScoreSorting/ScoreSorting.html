@@ -65,20 +65,32 @@
             background: #bdbdbd;
         }
 
-        aside {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 48%;
-            margin-left: 2%;
+        @media screen and (min-width:841px) {
+            aside {
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: 48%;
+                margin-left: 2%;
+            }
+
+            main {
+                margin: 0;
+                display: block;
+                float: left;
+                width: 48%;
+                margin-right: 2%;
+            }
         }
 
-        main {
-            margin: 0;
-            display: block;
-            float: left;
-            width: 48%;
-            margin-right: 2%;
+        @media screen and (max-width:840px) {
+            aside {
+                width:100%;
+            }
+
+            main {
+                width:100%;
+            }
         }
 
         span {
@@ -162,7 +174,7 @@
             tempResult = "<h3>统计结果：</h3>";
             loadingSorting = false;
             scoreData = document.getElementsByTagName("textarea")[0].value;
-            if(scoreData == ""){
+            if (scoreData == "") {
                 return;
             }
             //获取用户输入数据
