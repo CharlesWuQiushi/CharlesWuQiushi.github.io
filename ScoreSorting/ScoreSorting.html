@@ -85,11 +85,11 @@
 
         @media screen and (max-width:840px) {
             aside {
-                width:100%;
+                width: 100%;
             }
 
             main {
-                width:100%;
+                width: 100%;
             }
         }
 
@@ -120,6 +120,12 @@
             /* font-weight:bold; */
             font-size: 16px;
         }
+
+        #sort-result-copy {
+            position: fixed;
+            right: 0;
+            bottom: 60px;
+        }
     </style>
 </head>
 
@@ -130,11 +136,15 @@
         <h3>请在此处输入所有分数。</h3>
         <h4 style="font-size:18px;">格式要求：</h4>
         <h4 style="color:grey;">姓名（空格）分数（换行）</h4>
+        <h4>示例：</h4>
+        <h4 style="color:grey;">吴秋实 99<br />帅思邈 99</h4>
+        <h4>或：</h4>
+        <h4 style="color:grey;">99<br />94</h4>
         <h4 style="color:grey;">姓名可按需录入。如不录入姓名，请在直接输入分数后换行。</h4>
         <h4>请严格遵守格式要求输入。</h4>
         <span style="margin-right:0;margin-left:40px;">测试题目总分：</span><input type="number" maxlength="3" value="100" />
         <textarea></textarea><br />
-        <button><b style="margin:0;">统计数据</b></button>
+        <button id="sort-data"><b style="margin:0;">统计数据</b></button>
     </main>
     <aside>
     </aside>
@@ -143,18 +153,6 @@
         var scores = [];
         var hasNameData = false;
         var scoreofFull = 100;
-        var scoreData = document.getElementsByTagName("textarea")[0].value;
-
-        var totalScore = 0;
-        var aveScore = 0;
-        var fullScore = 0;
-        var fullScorePos = [];
-        var moreThan80persent = 0;
-        var moreThan90persent = 0;
-        var passed = 0;
-
-        var tempResult = "<h3>统计结果：</h3>";
-        var loadingSorting = false;
 
         //当总分设置改动时，同时改动变量
         document.getElementsByTagName("input")[0].oninput = function () {
@@ -163,109 +161,135 @@
             }
         }
         //绑定按钮点击事件
-        document.getElementsByTagName("button")[0].onclick = function () {
-            totalScore = 0;
-            aveScore = 0;
-            fullScore = 0;
-            fullScorePos = [];
-            moreThan80persent = 0;
-            moreThan90persent = 0;
-            passed = 0;
-            tempResult = "<h3>统计结果：</h3>";
-            loadingSorting = false;
-            scoreData = document.getElementsByTagName("textarea")[0].value;
-            if (scoreData == "") {
-                return;
-            }
-            //获取用户输入数据
-            students = [];
-            scores = [];
-            //使用换行符对字符串进行分割
-            scoreData = scoreData.split("\n");
-            console.log(scoreData)
-            //使用正则表达式匹配中文字符
-            var check = /^[0-9]*$/;
-            for (var i = 0; i < scoreData.length; i += 1) {
-                if (!check.test(scoreData[i])) {
-                    //如果有学生姓名，处理时可添加排序
-                    var tempText = scoreData[i].split(" ");
-                    //删除无意义字符串
-                    students[i] = tempText[0];
-                    scores[i] = parseInt(tempText[1]);
-                    hasNameData = true;
-                } else if (/\s/.test(scoreData[i]) || scoreData[i] != "") {
-                    //如果只有分数，直接写入分数
-                    students[i] = "";
-                    scores[i] = parseInt(scoreData[i]);
+        function BindSortButton() {
+            document.getElementById("sort-data").onclick = function () {
+                var scoreData = document.getElementsByTagName("textarea")[0].value;
+                var totalScore = 0;
+                var aveScore = 0;
+                var fullScore = 0;
+                var fullScorePos = [];
+                var moreThan80persent = 0;
+                var moreThan90persent = 0;
+                var passed = 0;
+                var tempResult = "<h3>统计结果：</h3>";
+                var loadingSorting = false;
+                var tempScoreData = scoreData;
+                if (scoreData == "") {
+                    return;
                 }
-            }
-            //输出数据
-            console.log(students);
-            console.log(scores);
-            tempResult = "<h3>统计结果：</h3>";
+                //获取用户输入数据
+                students = [];
+                scores = [];
+                //使用换行符对字符串进行分割
+                scoreData = scoreData.split("\n");
+                console.log(scoreData)
+                //使用正则表达式匹配中文字符
+                var check = /^[0-9]*$/;
+                for (var i = 0; i < scoreData.length; i += 1) {
+                    if (!check.test(scoreData[i])) {
+                        //如果有学生姓名，处理时可添加排序
+                        var tempText = scoreData[i].split(" ");
+                        //删除无意义字符串
+                        students[i] = tempText[0];
+                        scores[i] = parseInt(tempText[1]);
+                        hasNameData = true;
+                    } else if (/\s/.test(scoreData[i]) || scoreData[i] != "") {
+                        //如果只有分数，直接写入分数
+                        students[i] = "";
+                        scores[i] = parseInt(scoreData[i]);
+                    }
+                }
+                //输出数据
+                console.log(students);
+                console.log(scores);
+                tempResult = "<h3>统计结果：</h3>";
 
-            //对分数进行排序
-            for (var j = 0; j < scores.length; j++) {
-                // 声明一个变量，作为标志位
-                var done = true;
-                for (var i = 0; i < scores.length - j; i++) {
-                    if (scores[i] < scores[i + 1]) {
-                        var temp = scores[i];
-                        var tempName = students[i];
-                        scores[i] = scores[i + 1];
-                        scores[i + 1] = temp;
-                        if (hasNameData) {
-                            students[i] = students[i + 1];
-                            students[i + 1] = tempName;
-                            done = false;
+                //对分数进行排序
+                for (var j = 0; j < scores.length; j++) {
+                    // 声明一个变量，作为标志位
+                    var done = true;
+                    for (var i = 0; i < scores.length - j; i++) {
+                        if (scores[i] < scores[i + 1]) {
+                            var temp = scores[i];
+                            var tempName = students[i];
+                            scores[i] = scores[i + 1];
+                            scores[i + 1] = temp;
+                            if (hasNameData) {
+                                students[i] = students[i + 1];
+                                students[i + 1] = tempName;
+                                done = false;
+                            }
                         }
                     }
-                }
-                if (done) {
-                    break;
-                }
-            }
-
-            //输出所有数据
-            for (var i = 0; i < scores.length; i += 1) {
-                totalScore += scores[i];
-                if (scores[i] == scoreofFull) {
-                    fullScore += 1;
-                    if (students[i] != "") {
-                        students[students.length] = i;
+                    if (done) {
+                        break;
                     }
-                } else if (scores[i] >= scoreofFull * 0.9) {
-                    moreThan90persent += 1;
-                } else if (scores[i] >= scoreofFull * 0.8) {
-                    moreThan80persent += 1;
-                } else if (scores[i] >= scoreofFull * 0.6) {
-                    passed += 1;
                 }
-            }
-            aveScore = totalScore / scores.length;
-            tempResult += "<span class = 'sort-result-item'>共有</span><span class = 'sort-result-content'>" + scores.length + "</span>人参加测试。</span><br/>";
-            tempResult += "<span class = 'sort-result-item'>测试题目共</span><span class = 'sort-result-content'>" + scoreofFull + "</span>分；</span><br/>";
-            tempResult += "<span class = 'sort-result-item'>总分：</span><span class = 'sort-result-content'>" + totalScore + "</span>分。</span><br/>";
-            tempResult += "<span class = 'sort-result-item'>平均分（保留3位小数）：</span><span class = 'sort-result-content'>" + aveScore.toFixed(3) + "</span>分</span><br/>";
-            tempResult += "<span class = 'sort-result-item'>满分者：</span><span class = 'sort-result-content'>" + fullScore + "</span>位<span class = 'sort-result-content'>" + ((fullScorePos != []) ? ("，" + GetFullScoreStudents(students, fullScorePos) + "</span>") : "</span>") + "</span><br/>";
-            tempResult += "<span class = 'sort-result-item'>" + parseInt(scoreofFull * 0.9) + "分及以上者：</span><span class = 'sort-result-content'>" + moreThan90persent + "</span>人；<span><br/>";
-            tempResult += "<span class = 'sort-result-item'>" + parseInt(scoreofFull * 0.8) + "分及以上者：</span><span class = 'sort-result-content'>" + moreThan80persent + "</span>人；<span><br/>";
-            tempResult += "<span class = 'sort-result-item'>及格线及以上者：</span><span class = 'sort-result-content'>" + passed + "</span>人。<span><br/>";
-            if (hasNameData) {
-                tempResult += "<span class = 'sort-result-title'>分数排序结果：<br/>"
+
+                //输出所有数据
                 for (var i = 0; i < scores.length; i += 1) {
-                    tempResult += "<span class = 'sort-result-student'>" + students[i] + "&nbsp;&nbsp;</span>";
-                    tempResult += "<span class = 'sort-result-score'>" + scores[i] + "分<br/>";
+                    totalScore += scores[i];
+                    if (scores[i] == scoreofFull) {
+                        fullScore += 1;
+                        if (students[i] != "") {
+                            students[students.length] = i;
+                        }
+                    } else if (scores[i] >= scoreofFull * 0.9) {
+                        moreThan90persent += 1;
+                    } else if (scores[i] >= scoreofFull * 0.8) {
+                        moreThan80persent += 1;
+                    } else if (scores[i] >= scoreofFull * 0.6) {
+                        passed += 1;
+                    }
                 }
+                aveScore = totalScore / scores.length;
+                tempResult += "<span class = 'sort-result-item'>共有</span><span class = 'sort-result-content'>" + scores.length + "</span>人参加测试。</span><br/>";
+                tempResult += "<span class = 'sort-result-item'>测试题目共</span><span class = 'sort-result-content'>" + scoreofFull + "</span>分；</span><br/>";
+                tempResult += "<span class = 'sort-result-item'>总分：</span><span class = 'sort-result-content'>" + totalScore + "</span>分。</span><br/>";
+                tempResult += "<span class = 'sort-result-item'>平均分（保留3位小数）：</span><span class = 'sort-result-content'>" + aveScore.toFixed(3) + "</span>分</span><br/>";
+                tempResult += "<span class = 'sort-result-item'>满分者：</span><span class = 'sort-result-content'>" + fullScore + "</span>位<span class = 'sort-result-content'>" + ((fullScorePos != []) ? ("，" + GetFullScoreStudents(students, fullScorePos) + "</span>") : "</span>") + "</span><br/>";
+                tempResult += "<span class = 'sort-result-item'>" + parseInt(scoreofFull * 0.9) + "分及以上者：</span><span class = 'sort-result-content'>" + moreThan90persent + "</span>人；<span><br/>";
+                tempResult += "<span class = 'sort-result-item'>" + parseInt(scoreofFull * 0.8) + "分及以上者：</span><span class = 'sort-result-content'>" + moreThan80persent + "</span>人；<span><br/>";
+                tempResult += "<span class = 'sort-result-item'>及格线及以上者：</span><span class = 'sort-result-content'>" + passed + "</span>人。<span><br/>";
+                if (hasNameData) {
+                    tempResult += "<span class = 'sort-result-title'>分数排序结果：<br/>"
+                    for (var i = 0; i < scores.length; i += 1) {
+                        tempResult += "<span class = 'sort-result-student'>" + students[i] + "&nbsp;&nbsp;</span>";
+                        tempResult += "<span class = 'sort-result-score'>" + scores[i] + "分<br/>";
+                    }
+                }
+                tempResult += "</span>";
+                document.getElementsByTagName("aside")[0].innerHTML = tempResult;
+                if (document.getElementsByTagName("body")[0].innerHTML.includes("<button id = 'sort-result-copy'>复制结果</button>")) {
+                    document.getElementsByTagName("body")[0].innerHTML += "<button id = 'sort-result-copy'>复制结果</button>";
+                }
+                document.getElementsByTagName("textarea")[0].value = tempScoreData;
+                document.getElementById("sort-result-copy").onclick = function(){
+                    const textarea = document.createElement('textarea');
+                    document.body.appendChild(textarea);
+                    textarea.setAttribute('value', document.getElementsByTagName("aside")[0].innerText);
+                    textarea.select();
+                    if (document.execCommand('copy')) {
+                        document.execCommand('copy');
+                        alert("复制成功！");
+                    }
+                    document.body.removeChild(textarea);
+                }
+                BindSortButton()
             }
-            tempResult += "</span>";
-            document.getElementsByTagName("aside")[0].innerHTML = tempResult;
         }
+        BindSortButton()
 
         function GetFullScoreStudents(students, fullScorePos) {
             var temp = "";
             for (var i = 0; i < fullScorePos.length; i += 1) { temp += students[i] + " " }
             return temp;
+        }
+
+        const btn = document.querySelector('#btn');
+
+        window.onbeforeunload = function(event){
+            return "确定要离开？请确认已保存了统计数据。";
         }
     </script>
 </body>
